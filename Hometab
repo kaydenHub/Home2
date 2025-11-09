@@ -1,0 +1,76 @@
+-- ==========================
+-- HOME TAB
+-- ==========================
+local HomeLeft = Tabs.Home:AddLeftGroupbox("User Info")
+local HomeRight = Tabs.Home:AddRightGroupbox("Game Info")
+
+-- Services
+local player = game.Players.LocalPlayer
+local stats = game:GetService("Stats")
+local UserInputService = game:GetService("UserInputService")
+local TeleportService = game:GetService("TeleportService")
+local MarketplaceService = game:GetService("MarketplaceService")
+
+-- Calculate account age and join date
+local accountAge = player.AccountAge
+local joinDate = os.date("%m/%d/%Y", os.time() - (accountAge * 86400))
+
+-- User Info Section
+HomeLeft:AddLabel("User Name: " .. player.Name)
+HomeLeft:AddLabel("Display Name: " .. player.DisplayName)
+HomeLeft:AddLabel("User Id: " .. player.UserId)
+HomeLeft:AddLabel("Account Age: " .. accountAge .. " days")
+HomeLeft:AddLabel("Join Date: " .. joinDate)
+HomeLeft:AddLabel("Time: " .. os.date("%I:%M:%S %p"))
+HomeLeft:AddLabel("Executor: " .. (identifyexecutor and identifyexecutor() or "Unknown"))
+HomeLeft:AddLabel("Device: " .. (UserInputService.TouchEnabled and "Android" and “IOS” or "PC"))
+HomeLeft:AddLabel("Script Executions: 1")
+
+-- Game Info Section
+local fpsLabel = HomeRight:AddLabel("FPS: calculating...")
+local pingLabel = HomeRight:AddLabel("Ping: calculating...")
+local placeInfo = "Unknown"
+pcall(function()
+    placeInfo = MarketplaceService:GetProductInfo(game.PlaceId).Name
+end)
+HomeRight:AddLabel("Place Name: " .. placeInfo)
+HomeRight:AddLabel("Place ID: " .. game.PlaceId)
+local sessionStart = tick()
+local sessionLabel = HomeRight:AddLabel("Session: 00:00:00")
+
+HomeRight:AddButton("Rejoin", function()
+    TeleportService:Teleport(game.PlaceId, player)
+end)
+
+-- Update FPS, Ping, and Session
+task.spawn(function()
+    while task.wait(1) do
+        -- FPS calculation
+        local fps = math.floor(1 / RunService.RenderStepped:Wait())
+        fpsLabel:SetText("FPS: " .. fps)
+
+        -- Ping
+        local ping = stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+        pingLabel:SetText("Ping: " .. math.floor(ping) .. " ms")
+
+        -- Session time
+        local elapsed = tick() - sessionStart
+        local mins = math.floor(elapsed / 60)
+        local secs = math.floor(elapsed % 60)
+        local hours = math.floor(mins / 60)
+        mins = mins % 60
+        sessionLabel:SetText(string.format("Session: %02d:%02d:%02d", hours, mins, secs))
+    end
+end)
+
+-- Footer Label
+local footerLabel = Instance.new("TextLabel")
+footerLabel.Size = UDim2.new(0, 400, 0, 20)
+footerLabel.Position = UDim2.new(0.5, -200, 1, -25)
+footerLabel.AnchorPoint = Vector2.new(0.5, 1)
+footerLabel.BackgroundTransparency = 1
+footerLabel.Text = "by kayden l | .gg/u9bv2BhaV6"
+footerLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+footerLabel.TextScaled = true
+footerLabel.Font = Enum.Font.GothamBold
+footerLabel.Parent = game.CoreGui:FindFirstChild("Obsidian") or game.CoreGui
